@@ -1,7 +1,7 @@
 PAV - P2: detección de actividad vocal (VAD)
 ============================================
 
-Guillem Moreno Garcia y Gerard Ferret Colomer
+Guillem Moreno Garcia y Gerard Ferret Colomer.
 ---------------------------------------------
 
 
