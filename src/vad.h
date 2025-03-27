@@ -23,7 +23,8 @@ typedef struct {
   float k_silence;     /* umbral para confirmar silencio: noise_level + (3 * α) */
   float noise_zcr;     /* nivel de zcr medio */   
   float noise_zcr_sum;
-
+  float max_power;
+  float min_power;
   float p0;            /* α, factor multiplicativo; por defecto 1.0 */
 
   unsigned int count_voice;   /* contador de frames que indican voz */
@@ -33,6 +34,7 @@ unsigned int voice_segment_count;    // Número de segmentos de voz detectados
 unsigned int total_voice_frames;     // Total de frames clasificados como voz
 unsigned int max_silence_in_voice;   // Máxima duración de silencio encontrada en voz
 unsigned int adaptive_hangover;      // Valor adaptativo de hangover
+
 
 } VAD_DATA;
 
