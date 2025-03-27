@@ -10,5 +10,6 @@ Options:
    -o FILE, --output-vad=FILE  Label file with the result of VAD
    -w FILE, --output-wav=FILE  WAVE file with silences cleared
    -v, --verbose  Show debug information
+   -0 FLOAT, --alpha0=FLOAT  Set alpha0 value [default: 5.0]
    -h, --help     Show this screen
    --version      Show the version of the project
