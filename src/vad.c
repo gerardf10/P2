@@ -57,6 +57,8 @@ VAD_DATA *vad_open(float rate) {
     // In vad_open function
   vad_data->max_power = 0.0;       // Start with reasonable values
   vad_data->min_power = -100.0; 
+  vad_data->max_power_real = -60.0;       // Start with reasonable values
+  vad_data->min_power_real = -30.0; 
   return vad_data;
 }
 
@@ -85,6 +87,14 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
   float f_norm = 0.0;
   if (vad_data->max_power > vad_data->min_power) {
       f_norm = (f.p - vad_data->min_power) / (vad_data->max_power - vad_data->min_power);
+  }
+  if (f.p < vad_data->min_power_real) vad_data->min_power_real = f.p;
+  if (f.p > vad_data->max_power_real) vad_data->max_power_real = f.p;
+
+  // Calculate normalized power
+  float f_norm_real = 0.0;
+  if (vad_data->max_power_real > vad_data->min_power_real) {
+      f_norm_real = (f.p - vad_data->min_power_real) / (vad_data->max_power_real - vad_data->min_power_real);
   }
   switch (vad_data->state) {
     case ST_INIT:
@@ -119,7 +129,7 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
         if (vad_data->count_voice >= 1) {  //Esta en 1, es decir no hangover, si pongo no va.
           vad_data->state = ST_VOICE;
           vad_data->count_voice = 0;
-          printf("silence to voice: %f\n", f_norm);
+          printf("silence to voice: %f %f\n", f_norm, f_norm_real);
         }
       } else {
         vad_data->count_voice = 0;
@@ -133,7 +143,7 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
         if (vad_data->count_silence >= 7) {  
           vad_data->state = ST_SILENCE;
           vad_data->count_silence = 0;
-          printf("voice to silence: %f\n", f_norm);
+          printf("voice to silence: %f %f\n", f_norm, f_norm_real);
         }
       } else {
         vad_data->count_silence = 0;
@@ -149,6 +159,7 @@ if (f_norm < 0.45) {  // Very low normalized power
   if (vad_data->count_silence >= 5) {  // Reduced hangover
     vad_data->state = ST_SILENCE;
     vad_data->count_silence = 0;
+    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
   }
 }
 
@@ -157,6 +168,7 @@ if (f_norm < 0.25) {  // Very low normalized power
   if (vad_data->count_silence >= 3) {  // Reduced hangover
     vad_data->state = ST_SILENCE;
     vad_data->count_silence = 0;
+    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
   }
 }
 if (f_norm < 0.2) {  // Very low normalized power
@@ -164,8 +176,34 @@ if (f_norm < 0.2) {  // Very low normalized power
   if (vad_data->count_silence >= 1) {  // Reduced hangover
     vad_data->state = ST_SILENCE;
     vad_data->count_silence = 0;
+    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
   }
 }
+/*if (f_norm_real < 0.45) {  // Very low normalized power
+  // Faster transition with less hangover
+  if (vad_data->count_silence >= 5) {  // Reduced hangover
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
+  }
+}
+
+if (f_norm_real < 0.25) {  // Very low normalized power
+  // Faster transition with less hangover
+  if (vad_data->count_silence >= 3) {  // Reduced hangover
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
+  }
+}
+if (f_norm_real < 0.2) {  // Very low normalized power
+  // Faster transition with less hangover
+  if (vad_data->count_silence >= 1) {  // Reduced hangover
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
+  }
+}*/
   return vad_data->state;
 }
 

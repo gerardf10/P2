@@ -25,6 +25,8 @@ typedef struct {
   float noise_zcr_sum;
   float max_power;
   float min_power;
+  float max_power_real;
+  float min_power_real;
   float p0;            /* α, factor multiplicativo; por defecto 1.0 */
 
   unsigned int count_voice;   /* contador de frames que indican voz */
