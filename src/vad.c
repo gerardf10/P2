@@ -148,60 +148,177 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
       } else {
         vad_data->count_silence = 0;
       }
+       // For voice-to-silence transitions with high confidence
+        if (f_norm < 0.45) {  // Very low normalized power
+          // Faster transition with less hangover
+          if (vad_data->count_silence >= 5) {  // Reduced hangover
+            vad_data->state = ST_SILENCE;
+            vad_data->count_silence = 0;
+            printf("voice to silence f_norm 0.45: %f %f\n", f_norm, f_norm_real);
+          }
+        }
+
+        if (f_norm < 0.25) {  // Very low normalized power
+          // Faster transition with less hangover
+          if (vad_data->count_silence >= 3) {  // Reduced hangover
+            vad_data->state = ST_SILENCE;
+            vad_data->count_silence = 0;
+            printf("voice to silence f_norm 0.25: %f %f\n", f_norm, f_norm_real);
+          }
+        }
+        if (f_norm < 0.2) {  // Very low normalized power
+          // Faster transition with less hangover
+          if (vad_data->count_silence >= 1) {  // Reduced hangover
+            vad_data->state = ST_SILENCE;
+            vad_data->count_silence = 0;
+            printf("voice to silence f_norm 0.2: %f %f\n", f_norm, f_norm_real);
+          }
+        }
+
       break;
     case ST_UNDEF:
     break;
 
     }
- // For voice-to-silence transitions with high confidence
-if (f_norm < 0.45) {  // Very low normalized power
-  // Faster transition with less hangover
-  if (vad_data->count_silence >= 5) {  // Reduced hangover
+
+// Add state stability logic to prevent rapid transitions
+/*static VAD_STATE last_state = ST_SILENCE;
+static int state_duration = 0;
+static int min_state_duration = 3; // Minimum of 3 frames (150ms) in each state
+
+// Check if state is about to change
+if (last_state != vad_data->state && vad_data->init_count >= 10) {
+  // If we've been in the previous state for less than min_state_duration frames
+  if (state_duration < min_state_duration) {
+    // Don't allow the state change
+    vad_data->state = last_state;
+    printf("preventing rapid transition, maintaining state: %s\n", state2str(last_state));
+  } else {
+    // Reset duration counter for new state
+    state_duration = 0;
+  }
+} else {
+  // Same state continues, increment duration
+  state_duration++;
+}
+// Update last state for next frame
+last_state = vad_data->state;*/
+/*
+// Uncommented and optimized f_norm_real transitions
+// For voice-to-silence acceleration using real power normalization
+if (f_norm_real < 0.18) {  // Clear voice-to-silence indicator
+  if (vad_data->count_silence >= 4) {
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence f_norm_real 0.18: %f %f\n", f_norm, f_norm_real);
+  }
+}
+
+if (f_norm_real < 0.10) {  // Strong voice-to-silence indicator
+  if (vad_data->count_silence >= 2) {
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence f_norm_real 0.10: %f %f\n", f_norm, f_norm_real);
+  }
+}
+
+if (f_norm_real < 0.05) {  // Very clear voice-to-silence
+  vad_data->state = ST_SILENCE;  // Immediate transition with no hangover
+  vad_data->count_silence = 0;
+  printf("voice to silence f_norm_real 0.05: %f %f\n", f_norm, f_norm_real);
+}
+
+// Combined metrics for improved silence detection
+if (f_norm < 0.35 && f_norm_real < 0.25) {
+  if (vad_data->count_silence >= 2) {
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence combined: %f %f\n", f_norm, f_norm_real);
+  }
+}
+
+// ZCR-based voice-to-silence detection (low ZCR often indicates silence) - more sensitive
+if (f.zcr < 0.038 && f_norm < 0.42) {  // Increased thresholds for better silence recall
+  if (vad_data->count_silence >= 1) {  // Reduced hangover for faster transitions
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence low zcr: %f %f %f\n", f.zcr, f_norm, f_norm_real);
+  }
+}
+
+// Adaptive threshold for transitional frames - more aggressive
+if ((f_norm < 0.34 && f_norm_real < 0.24) || (f.p < vad_data->noise_level + 3.7)) { // Higher thresholds
+  if (vad_data->count_silence >= 2) {  // Reduced hangover
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence adaptive: %f %f %f\n", f.p, f_norm, f_norm_real);
+  }
+}
+
+
+// Special case for consistent low energy - more sensitive but with voice protection
+if (vad_data->count_silence >= 4 && f.p < vad_data->noise_level + 4.0) {
+  if (f.zcr < 0.06 || f_norm < 0.45) {  // Added voice protection check
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence persistent low energy: %f\n", f.p);
+  }
+}
+
+// New condition for better silence detection in borderline cases - slightly more conservative
+if (f.p < vad_data->noise_level + 2.8 && f.zcr < 0.048) {  // Reduced ZCR threshold
+  if (vad_data->count_silence >= 2) {  // Increased hangover from 1 to 2
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence clear signature: %f %f\n", f.p, f.zcr);
+  }
+}
+
+// Enhanced condition for detecting silence in speech pauses with voice protection
+if (vad_data->state == ST_VOICE && f.p < vad_data->k_silence && f.zcr < vad_data->noise_zcr * 1.5) {
+  if (f.zcr < 0.055 || f_norm < 0.40) {  // Added voice protection
+    vad_data->state = ST_SILENCE;
+    vad_data->count_silence = 0;
+    printf("voice to silence in speech pause: %f %f\n", f.p, f.zcr);
+  }
+}
+
+// Add voice protection - restore voice classification for clear voice segments
+if (vad_data->state == ST_SILENCE && f.p > vad_data->k_voice && f.zcr > 0.07) {
+  vad_data->state = ST_VOICE;
+  printf("silence to voice protection: %f %f\n", f.p, f.zcr);
+}
+
+// Add protection for strong voice signals
+if (vad_data->state == ST_SILENCE && f_norm > 0.55 && f.zcr > 0.065) {
+  vad_data->state = ST_VOICE;
+  printf("silence to voice strong signal: %f %f %f\n", f_norm, f_norm_real, f.zcr);
+}*/
+
+/*
+
+// For voice-to-silence acceleration after your existing conditions:
+if (f_norm_real < 0.15) {  // Clear voice-to-silence indicator
+  if (vad_data->count_silence >= 4) {
     vad_data->state = ST_SILENCE;
     vad_data->count_silence = 0;
     printf("voice to silence: %f %f\n", f_norm, f_norm_real);
   }
 }
 
-if (f_norm < 0.25) {  // Very low normalized power
-  // Faster transition with less hangover
-  if (vad_data->count_silence >= 3) {  // Reduced hangover
-    vad_data->state = ST_SILENCE;
-    vad_data->count_silence = 0;
-    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
-  }
-}
-if (f_norm < 0.2) {  // Very low normalized power
-  // Faster transition with less hangover
-  if (vad_data->count_silence >= 1) {  // Reduced hangover
-    vad_data->state = ST_SILENCE;
-    vad_data->count_silence = 0;
-    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
-  }
-}
-/*if (f_norm_real < 0.45) {  // Very low normalized power
-  // Faster transition with less hangover
-  if (vad_data->count_silence >= 5) {  // Reduced hangover
+if (f_norm_real < 0.08) {  // Strong voice-to-silence indicator
+  if (vad_data->count_silence >= 2) {
     vad_data->state = ST_SILENCE;
     vad_data->count_silence = 0;
     printf("voice to silence: %f %f\n", f_norm, f_norm_real);
   }
 }
 
-if (f_norm_real < 0.25) {  // Very low normalized power
-  // Faster transition with less hangover
-  if (vad_data->count_silence >= 3) {  // Reduced hangover
+if (f_norm_real < 0.04) {  // Very clear voice-to-silence
+  if (vad_data->count_silence >= 1) {
     vad_data->state = ST_SILENCE;
     vad_data->count_silence = 0;
-    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
-  }
-}
-if (f_norm_real < 0.2) {  // Very low normalized power
-  // Faster transition with less hangover
-  if (vad_data->count_silence >= 1) {  // Reduced hangover
-    vad_data->state = ST_SILENCE;
-    vad_data->count_silence = 0;
-    printf("voice to silence: %f %f\n", f_norm, f_norm_real);
+    printf("voice to silence f_norm_real: %f %f\n", f_norm, f_norm_real);
   }
 }*/
   return vad_data->state;
