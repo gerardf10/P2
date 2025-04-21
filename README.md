@@ -142,7 +142,7 @@ Ejercicios
 
 	![Senyal marcat](/img/SenyalMarcat.png)
 
-	Podem veure com al primer panell per sota del senyal en forma d'ona tenim les etiquetes que indiquen veu ('V') o silenci ('S'). Seguidament, observem la potència i la ZCR.
+	Podem veure com al primer panell per sota del senyal en forma d'ona tenim les etiquetes que indiquen veu ('V') o silenci ('S'). Seguidament, observem la potència i la ZCR. Just al principi hi ha una mica de soroll a causa del clic del ratolí, com es va comentar a la pràctica anterior.
 
 
 - A la vista de la gráfica, indique qué valores considera adecuados para las magnitudes siguientes:
@@ -165,7 +165,7 @@ Ejercicios
   - Complete el código de los ficheros de la práctica para implementar un detector de actividad vocal en
   tiempo real tan exacto como sea posible. Tome como objetivo la maximización de la puntuación-F `TOTAL`.
 
-  A continuació, es mostren els fitxers principals modificats per aconseguir la maximització de la puntuació F-Total. La resta estan disponibles consultant el directori pertinent. Creiem que el codi és autocontingut i que els aclariments més importants estan fets en forma de comentari, però tot i així al darrer apartat s'explica amb més detall el funcionament del fitxer "vad.c".
+  A continuació, es mostren els fitxers principals modificats per aconseguir la maximització de la puntuació F-Total. La resta estan disponibles consultant el directori pertinent. Creiem que el codi és autocontingut i que els aclariments més importants estan fets en forma de comentari.
 
 i) Fitxer "vad.h":
 
@@ -421,7 +421,7 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
 ```	
 
 
-iii) Fitxer "pav_analysis.h" (nova creació):
+iii) Fitxer "pav_analysis.h" (P1):
 
  ```c
 #ifndef PAV_ANALYSIS_H
@@ -437,7 +437,7 @@ float compute_power_hamming(const float *x, unsigned int N, float fm);
 #endif	/* PAV_ANALYSIS_H	*/
 ```
 
-iv) Fitxer "pav_analysis.c" (nova creació):
+iv) Fitxer "pav_analysis.c" (P1):
 
 ```c
 #include <math.h>
@@ -610,9 +610,15 @@ int main(int argc, char *argv[]) {
 ```
 
 - Inserte una gráfica en la que se vea con claridad la señal temporal, el etiquetado manual y la detección
-  automática conseguida para el fichero grabado al efecto. 
+  automática conseguida para el fichero grabado al efecto.
+
+  ![Gràfic etiquetat](/img/GraficEtiquetat.png)
+
+  Per generar el gràfic anterior s'ha utilitzat el fitxer "grafic_etiquetat.py" i s'ha fet servir l'alpha0 per defecte (4.95). Recordem que la transcripció era "Som el Gerard Ferret i el Guillem Moreno. Avui fa un dia molt maco. Tot i així, potser després plou".
 
 - Explique, si existen, las discrepancias entre el etiquetado manual y la detección automática.
+
+  Constatem que hi ha poca diferència entre l'etiquetat manual i la detecció automàtica. Això ha estat una sorpresa positiva, ja que pensàvem que ambdues mesures diferirien més. Probablement, el fet que el senyal de veu comenci pocs instants després d'iniciar la gravació i que el soroll ambiental (classificat com a silenci, en tant que absència de parla) es mantingui constant, sumat a una satisfactòria alpha0 per defecte (la que s'ha utilitzat), han estat factors clau per aconseguir aquests bons resultats.
 
 - Evalúe los resultados sobre la base de datos `db.v4` con el script `vad_evaluation.pl` e inserte a 
   continuación las tasas de sensibilidad (*recall*) y precisión para el conjunto de la base de datos (sólo
@@ -636,6 +642,7 @@ int main(int argc, char *argv[]) {
 - Si ha usado `docopt_c` para realizar la gestión de las opciones y argumentos del programa `vad`, inserte
   una captura de pantalla en la que se vea el mensaje de ayuda del programa.
 
+  ![Menu](/img/Menu.png)
 
 ### Contribuciones adicionales y/o comentarios acerca de la práctica
 
@@ -647,7 +654,7 @@ int main(int argc, char *argv[]) {
 - Si lo desea, puede realizar también algún comentario acerca de la realización de la práctica que
   considere de interés de cara a su evaluación.
 
-  No tenim cap més comentari a afegir. Restem disponibles per a qualsevol aclariment.
+  No tenim cap més comentari a afegir. Tan sols volem fer notar que estem molt satisfets d'haver assolit un 93.804%, i que després d'haver invertit molt de temps en intentar millorar aquest valor no n'hem estat capaços, motiu pel qual creiem que hem assolit la millor versió possible al nostre abast. Restem disponibles per a qualsevol aclariment.
 
 
 ### Antes de entregar la práctica
