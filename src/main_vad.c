@@ -80,10 +80,6 @@ int main(int argc, char *argv[]) {
     if ((n_read = sf_read_float(sndfile_in, buffer, frame_size)) != frame_size)
       break;
 
-    if (sndfile_out != NULL) {
-      /* TODO: copiar samples o escribir ceros en segmentos de silencio */
-    }
-
     state = vad(vad_data, buffer, alpha0);
     if (verbose & DEBUG_VAD)
       vad_show_state(vad_data, stdout);
@@ -97,9 +93,22 @@ int main(int argc, char *argv[]) {
       last_t = t;
   }
 
-    if (sndfile_out != NULL) {
-      /* TODO: escribir en el output wav según el estado */
+    if (sndfile_out) {
+      if (state == ST_VOICE) {
+          sf_write_float(sndfile_out, buffer, frame_size);
+      } else {
+          sf_write_float(sndfile_out, buffer_zeros, frame_size);
+      }
     }
+  }
+    // resto parcial
+    if (n_read > 0) {
+      if (sndfile_out) {
+          if (state == ST_VOICE)
+              sf_write_float(sndfile_out, buffer, n_read);
+          else
+              sf_write_float(sndfile_out, buffer_zeros, n_read);
+      }
   }
 
   state = vad_close(vad_data);
