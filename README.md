@@ -637,9 +637,11 @@ int main(int argc, char *argv[]) {
 
   Realitzat al main i cambiat a el script ./run_vad.sh
   Genera un nou wav amb el nom original + _stripped, llavors aquest no es torna a agafar quan es torna a executar el programa perque hem afegit al script
+  ```bash
   [[ "${filewav##*/}" == *_stripped.wav ]] && continue
+  ```
   Que fa que no l'agafi el for del run_vad.sh. Pero quan s'escolta el nou, es veu que quan es diu que hi ha silenci. La trama passa a ser tot zeros.
-    
+
 #### Gestión de las opciones del programa usando `docopt_c`
 
 - Si ha usado `docopt_c` para realizar la gestión de las opciones y argumentos del programa `vad`, inserte
