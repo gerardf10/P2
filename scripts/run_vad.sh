@@ -30,6 +30,6 @@ for filewav in $DB/*/*wav; do
 
 done
 
-./vad_evaluation.pl $DB/*/*lab
+scripts/vad_evaluation.pl $DB/*/*lab
 
 exit 0
