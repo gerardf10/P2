@@ -76,6 +76,7 @@ unsigned int vad_frame_size(VAD_DATA *vad_data) {
    Durante INIT se retorna ST_SILENCE para evitar que INIT se emita en el .vad.
 */
 VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
+  vad_data->p0 = alpha0;  // Actualizar el valor de alpha0
   Features f = compute_features(x, vad_data->frame_length, vad_data->sampling_rate);
   vad_data->last_feature = f.p;  /* Guardar potencia para depuración */
   // In vad function, after computing features
@@ -108,6 +109,7 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x, float alpha0) {
         /* Calculamos umbrales con pesos diferenciados para cada estado */
         vad_data->k_voice = vad_data->noise_level + 2.41 * vad_data->p0;
         vad_data->k_silence = vad_data->noise_level + 0.985 *vad_data->p0; ;
+
         vad_data->state = ST_SILENCE;
         if (f.p > vad_data->k_voice && f.zcr > 0.015) {
           vad_data->state = ST_VOICE;
