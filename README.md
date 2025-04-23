@@ -642,6 +642,11 @@ int main(int argc, char *argv[]) {
   ```
   Que fa que no l'agafi el for del run_vad.sh. Pero quan s'escolta el nou, es veu que quan es diu que hi ha silenci. La trama passa a ser tot zeros.
 
+  També aquí tenim la gràfica comparant les potències abans i després de silenciar. Cal destacar que els punts de -100dBs enrealitat son -infinit dBs pero he fet que el programa de les gràfiques assigni -100 als valors de -infinit.
+
+    ![Comparació cancelació del silenci](/img/comparaciosilencivad.png)
+
+
 #### Gestión de las opciones del programa usando `docopt_c`
 
 - Si ha usado `docopt_c` para realizar la gestión de las opciones y argumentos del programa `vad`, inserte
